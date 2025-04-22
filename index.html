@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chainacting</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🎬 Chainacting</h1>
+  <p>Start with an actor or a movie. Can you keep the chain going?</p>
+
+  <div id="start-options">
+    <button id="start-actor">Start with Actor 👤</button>
+    <button id="start-movie">Start with Movie 🎬</button>
+  </div>
+
+  <div id="game-controls" style="display: none;">
+    <input type="text" id="input-box" placeholder="Type an actor or movie..." />
+    <button id="submit-btn">Submit</button>
+  </div>
+
+  <ul id="chain-list"></ul>
+
+  <div id="chain-container" style="margin-bottom: 10px;">
+    🔗 Chain Length: <span id="chain-length">0</span>
+  </div>
+
+  <script>
+    const API_KEY = '29aa0d9c6ed58d1e0a92248c0f7cbaa9';
+    let chainLength = 0;
+    let lastTMDBItem = null; // will store the last actor/movie object
+    let expecting = null; // null until the player picks (either 'person' or 'movie')
+
+    const input = document.getElementById('input-box');
+    const button = document.getElementById('submit-btn');
+    const chainList = document.getElementById('chain-list');
+    const startActorBtn = document.getElementById('start-actor');
+    const startMovieBtn = document.getElementById('start-movie');
+    const gameControls = document.getElementById('game-controls');
+    const startOptions = document.getElementById('start-options');
+
+    // Title case function
+    function toTitleCase(str) {
+      return str
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    }
+
+    // Function to start the game
+    function startGame() {
+      startOptions.style.display = 'none'; // hide start buttons
+      gameControls.style.display = 'block'; // show input + submit
+    }
+
+    // Helper function to search TMDB
+    async function searchTMDB(query, expectedType) {
+    const url = `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.results || data.results.length === 0) return null;
+
+    // Filter results based on the expected type
+    let filteredResults = data.results.filter(result => {
+        if (expectedType === 'movie') return result.media_type === 'movie';
+        if (expectedType === 'person') return result.media_type === 'person';
+        return false;
+    });
+
+    if (filteredResults.length === 0) return null;
+
+    // Try to find an exact match first (case-insensitive)
+    const exactMatch = filteredResults.find(result => {
+        const nameOrTitle = result.name || result.title;
+        return nameOrTitle.toLowerCase().trim() === query.toLowerCase().trim();
+    });
+
+    return exactMatch || filteredResults[0]; // Fallback to first if no exact match
+    }
+
+
+    // Check if the movie is in the actor's credits
+    async function isMovieInPersonCredits(personId, movieTitle) {
+      const url = `https://api.themoviedb.org/3/person/${personId}/movie_credits?api_key=${API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.cast.some(movie => movie.title.toLowerCase() === movieTitle.toLowerCase());
+    }
+
+    // Check if the person is in the movie's credits
+    async function isPersonInMovieCredits(movieId, personName) {
+      const url = `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.cast.some(person => person.name.toLowerCase() === personName.toLowerCase());
+    }
+
+    // Event listeners for the start buttons
+    startActorBtn.addEventListener('click', () => {
+      expecting = 'person';
+      startGame();
+    });
+
+    startMovieBtn.addEventListener('click', () => {
+      expecting = 'movie';
+      startGame();
+    });
+
+    // Submit button logic
+    button.addEventListener('click', async () => {
+      const userInput = input.value.trim();
+      if (!userInput) return;
+
+      const result = await searchTMDB(userInput, expecting);
+      console.log("User input:", userInput);
+      console.log("TMDB result:", result);
+      console.log("Expecting:", expecting);
+
+      if (!result) {
+        alert("I couldn't find that. Try again.");
+        return;
+      }
+
+      // Check if it's the correct type of media
+      if ((expecting === 'movie' && result.media_type !== 'movie' && result.media_type !== 'tv') ||
+          (expecting === 'person' && result.media_type !== 'person')) {
+        alert(`Oops! I was expecting a ${expecting}, but you gave me a ${result.media_type}. Try again.`);
+        return;
+      }
+
+        // Ensure exact match with user input for both movie and person (ignoring case)
+        const isExactMatch = userInput.toLowerCase().trim() === (result.name || result.title).toLowerCase().trim();
+        if (!isExactMatch) {
+            alert("Oops, that doesn't match exactly! Please check the spelling.");
+            return;
+        }
+
+      // Create the list item for the chain
+      const li = document.createElement('li');
+
+      // Check if the movie/actor is logically valid in the chain
+      let isValidConnection = true;
+      if (lastTMDBItem) {
+        if (expecting === 'movie' && lastTMDBItem.media_type === 'person') {
+          isValidConnection = await isMovieInPersonCredits(lastTMDBItem.id, result.title);
+        } else if (expecting === 'person' && lastTMDBItem.media_type === 'movie') {
+          isValidConnection = await isPersonInMovieCredits(lastTMDBItem.id, result.name);
+        }
+      }
+
+      if (!isValidConnection) {
+        alert("That doesn't link! Make sure the actor was in the movie.");
+        return;
+      }
+
+      // After receiving the result
+      if (expecting === 'person') {
+        const formattedName = toTitleCase(result.name);
+        li.textContent = `👤 ${formattedName}`;
+        chainList.appendChild(li);
+      } else if (expecting === 'movie') {
+        const formattedTitle = toTitleCase(result.title);
+        li.textContent = `🎬 ${formattedTitle}`;
+        chainList.appendChild(li);
+      }
+
+      // Update the chain count and display
+      chainLength++;
+      document.getElementById('chain-length').textContent = chainLength;
+
+      // Store the current result for the next round
+      lastTMDBItem = result;
+      input.value = ''; // Clear input
+
+      // Switch what we expect next
+      expecting = (expecting === 'person') ? 'movie' : 'person';
+    });
+
+    // Enter key to submit the input
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        button.click();
+      }
+    });
+  </script>
+</body>
+</html>
