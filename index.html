@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chainacting</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🎬 Chainacting</h1>
+  <p>Start with an actor or a movie. Can you keep the chain going?</p>
+
+  <div id="start-options">
+    <button id="start-actor">Start with Actor 👤</button>
+    <button id="start-movie">Start with Movie 🎬</button>
+  </div>
+  
+  <div id="actor-game-controls" style="display: none;">
+    <input id="actor-search-input" type="text" placeholder="Search actor..." autocomplete="off">
+    <button id="submit-btn">Submit</button>
+  </div>
+  
+  <div id="movie-game-controls" style="display: none;">
+    <input id="movie-search-input" type="text" placeholder="Search movie..." autocomplete="off">
+    <button id="submit-btn">Submit</button>
+  </div>
+
+  <!-- Updated list for the chain -->
+  <ul id="chain-list">
+    <!-- Each chain item will be added here -->
+  </ul>
+  
+  <!-- Chain Length Display -->
+  <div id="chain-container" style="margin-bottom: 10px;">
+    🔗 Chain Length: <span id="chain-length">0</span>
+  </div>  
+
+  <!-- Image Display Container (for actor and movie images) -->
+  <div id="image-display" style="display: flex; justify-content: space-around; margin-top: 20px;">
+    <!-- Actor Image -->
+    <div id="actor-image-container" style="text-align: center;">
+      <img id="actor-img" style="width: 150px; height: 200px; display: none;" />
+      <p id="actor-label"> </p>
+    </div>
+    <!-- Movie Image -->
+    <div id="movie-image-container" style="text-align: center;">
+      <img id="movie-img" style="width: 150px; height: 200px; display: none;" />
+      <p id="movie-label"> </p>
+    </div>
+  </div>
+
+  <!-- Your JavaScript file -->
+  <script type="module" src="scripts/autocomplete.js"></script>
+  <script type="module" src="scripts/game.js"></script>
+</body>
+</html>

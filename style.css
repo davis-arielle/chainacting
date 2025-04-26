@@ -1,0 +1,91 @@
+body {
+    font-family: sans-serif;
+    text-align: center;
+    margin: 2em;
+    background-color: #fdf6e3;
+    color: #333;
+  }
+  
+  input {
+    padding: 10px;
+    font-size: 1em;
+    width: 300px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    margin-left: 10px;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  li {
+    margin-top: 10px;
+    font-weight: bold;
+  }
+
+  #autocomplete-list {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 300px;
+    z-index: 10;
+    display: block; /* Ensure the list is visible when populated */
+  }
+  .autocomplete-item {
+    padding: 10px;
+    cursor: pointer;
+  }
+  .autocomplete-item:hover {
+    background-color: #f0f0f0;
+  }
+
+#chain-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chain-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.chain-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #e0e0e0;
+}
+
+.chain-box img {
+  width: 120px;
+  height: 160px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.chain-box div {
+  margin-top: 5px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.user-box {
+  background-color: #a0d3ff;
+}
+
+.computer-box {
+  background-color: #ffddc1;
+}
